@@ -15,10 +15,12 @@ COPY index.php /var/www/html/index.php
 RUN a2enmod proxy_fcgi setenvif && \
     a2enconf php7.4-fpm && \
     sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf && \
+    RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf && \
+    sed -i 's/\<VirtualHost \*:80/VirtualHost \*:8080/g' /etc/apache2/sites-available/000-default.conf && \
     echo "SetEnvIf Authorization \"(.*)\" HTTP_AUTHORIZATION=\$1" >> /etc/apache2/apache2.conf
 
 # Expose port 80 for incoming traffic
-EXPOSE 80
+EXPOSE 8080
 
 # Start Apache web server with PHP-FPM
 CMD ["apache2-foreground"]
