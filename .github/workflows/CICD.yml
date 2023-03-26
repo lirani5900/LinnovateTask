@@ -3,8 +3,9 @@ name: Build and push Docker image and deploy
 on:
   push:
     branches:
-      - development # Automatic deploy for development branch
+      - development
       - master
+  workflow_dispatch: # Manually triggered workflow
 
 jobs:
   build-and-push:
@@ -16,11 +17,9 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t my-web-app .
-
       - name: Tag Docker image
         run: |
           docker tag my-web-app lirani5900/my-web-app:latest
-
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
@@ -34,13 +33,14 @@ jobs:
       # Deploy to development environment
       - name: Deploy to development
         if: github.ref == 'refs/heads/development'
-        uses: docker/setup-buildx-action@v1 #Buildx is a Docker CLI plugin that provides additional features
+        uses: docker/setup-buildx-action@v1
         with:
-          driver-opts: network=host #container will share the network namespace with the host
+          driver-opts: network=host
       - name: Build and push development environment
         if: github.ref == 'refs/heads/development'
         run: |
           docker buildx build --platform linux/amd64 -t lirani5900/my-web-app:development --push .
+          docker run -p 8080:8080 -d lirani5900/my-web-app:development
 
       # Deploy to master environment
       - name: Deploy to master
@@ -53,15 +53,28 @@ jobs:
         run: |
           docker buildx build --platform linux/amd64 -t lirani5900/my-web-app:master --push .
 
+      # Trigger deployment to EKS for the development environment
+      - name: Deploy to EKS development
+        if: github.ref == 'refs/heads/development' && github.event_name == 'workflow_dispatch'
+        uses: peter-evans/create-pull-request@v3
+        with:
+          branch: deployment-dev
+          commit-message: 'Deploy to EKS development'
+          title: 'Deploy to EKS development'
+          body: 'Deploy to EKS development'
+          labels: 'deploy-to-eks'
+          reviewers: 'username'
+          assignees: 'username'
+
       # Trigger deployment to EKS for the master environment
-      - name: Deploy to EKS
+      - name: Deploy to EKS master
         if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
         uses: peter-evans/create-pull-request@v3
         with:
-          branch: deployment
-          commit-message: 'Deploy to EKS'
-          title: 'Deploy to EKS'
-          body: 'Deploy to EKS'
+          branch: deployment-master
+          commit-message: 'Deploy to EKS master'
+          title: 'Deploy to EKS master'
+          body: 'Deploy to EKS master'
           labels: 'deploy-to-eks'
           reviewers: 'username'
           assignees: 'username'
