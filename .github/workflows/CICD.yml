@@ -36,7 +36,7 @@ jobs:
         if: github.ref == 'refs/heads/development'
         uses: docker/setup-buildx-action@v1 #Buildx is a Docker CLI plugin that provides additional features
         with:
-          driver-opts: network=host
+          driver-opts: network=host #container will share the network namespace with the host
       - name: Build and push development environment
         if: github.ref == 'refs/heads/development'
         run: |
