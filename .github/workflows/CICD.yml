@@ -40,7 +40,7 @@ jobs:
       - name: Build and push development environment
         if: github.ref == 'refs/heads/development'
         run: |
-          docker buildx build --platform linux/amd64 -t $DOCKER_HUB_USERNAME/my-web-app:development --push .
+          docker buildx build --platform linux/amd64 -t lirani5900/my-web-app:development --push .
 
       # Deploy to master environment
       - name: Deploy to master
@@ -51,7 +51,7 @@ jobs:
       - name: Build and push master environment
         if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
         run: |
-          docker buildx build --platform linux/amd64 -t $DOCKER_HUB_USERNAME/my-web-app:master --push .
+          docker buildx build --platform linux/amd64 -t lirani5900/my-web-app:master --push .
 
       # Trigger deployment to EKS for the master environment
       - name: Deploy to EKS
