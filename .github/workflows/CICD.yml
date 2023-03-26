@@ -29,7 +29,7 @@ jobs:
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker push $DOCKER_HUB_USERNAME/my-web-app:latest
+          docker push lirani5900/my-web-app:latest
 
       # Deploy to development environment
       - name: Deploy to development
