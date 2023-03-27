@@ -25,11 +25,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
@@ -37,6 +39,7 @@ jobs:
           context: .
           file: Dockerfile
           tags: ${{ env.IMAGE_REPO_NAME }}:${{ github.sha }}
+          
       - name: Deploy to EKS (development)
         if: github.ref == 'refs/heads/development' && github.event_name == 'push'
         env:
@@ -46,11 +49,7 @@ jobs:
           kubectl config use-context ${{ env.CLUSTER_NAME }}
           kubectl set image deployment/my-app my-app=${{ env.IMAGE_REPO_NAME }}:${{ github.sha }} -n dev
           kubectl rollout status deployment/my-app -n dev
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          
       - name: Deploy to EKS (master)
         if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
         env:
@@ -60,8 +59,3 @@ jobs:
           kubectl config use-context ${{ env.CLUSTER_NAME }}
           kubectl set image deployment/my-app my-app=${{ env.IMAGE_REPO_NAME }}:${{ github.sha }} -n prod
           kubectl rollout status deployment/my-app -n prod
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
