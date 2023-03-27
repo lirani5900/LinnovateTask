@@ -15,8 +15,6 @@ env:
   CLUSTER_NAME: LinnovateTask
   DEV_NODEGROUP_NAME: DevLinnovate
   MASTER_NODEGROUP_NAME: MasterLinnovate
-  DOCKERHUB_USERNAME: <your Docker Hub username>
-  DOCKERHUB_PASSWORD: <your Docker Hub password>
   KUBECONFIG_DEV: /tmp/kubeconfig-dev.yaml
   KUBECONFIG_MASTER: /tmp/kubeconfig-master.yaml
   
