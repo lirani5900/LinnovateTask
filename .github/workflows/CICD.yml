@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - development
+      - master
   workflow_dispatch:
     branches:
       - master
@@ -47,8 +48,8 @@ jobs:
         run: |
           aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG_DEV }}
           kubectl config use-context ${{ env.CLUSTER_NAME }}
-          kubectl set image deployment/my-app my-app=${{ env.IMAGE_REPO_NAME }}:${{ github.sha }} -n dev
-          kubectl rollout status deployment/my-app -n dev
+          kubectl set image deployment/my-app my-app=${{ env.IMAGE_REPO_NAME }}:${{ github.sha }} -n dev --context=arn:aws:eks:${{ env.AWS_REGION }}:${{ github.repository_owner }}:${{ env.CLUSTER_NAME }}/cluster/${{ env.CLUSTER_NAME }}
+          kubectl rollout status deployment/my-app -n dev --context=arn:aws:eks:${{ env.AWS_REGION }}:${{ github.repository_owner }}:${{ env.CLUSTER_NAME }}/cluster/${{ env.CLUSTER_NAME }}
           
       - name: Deploy to EKS (master)
         if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
@@ -57,5 +58,5 @@ jobs:
         run: |
           aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG_MASTER }}
           kubectl config use-context ${{ env.CLUSTER_NAME }}
-          kubectl set image deployment/my-app my-app=${{ env.IMAGE_REPO_NAME }}:${{ github.sha }} -n prod
-          kubectl rollout status deployment/my-app -n prod
+          kubectl set image deployment/my-app my-app=${{ env.IMAGE_REPO_NAME }}:${{ github.sha }} -n prod --context=arn:aws:eks:${{ env.AWS_REGION }}:${{ github.repository_owner }}:${{ env.CLUSTER_NAME }}/cluster/${{ env.CLUSTER_NAME }}
+          kubectl rollout status deployment/my-app -n prod --context=arn:aws:eks:${{ env.AWS_REGION }}:${{ github.repository_owner }}:${{ env.CLUSTER_NAME }}/cluster/${{ env.CLUSTER_NAME }}```
