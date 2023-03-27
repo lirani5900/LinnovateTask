@@ -39,11 +39,6 @@ jobs:
           tags: ${{ env.IMAGE_REPO_NAME }}:${{ github.sha }}
       - name: Deploy to EKS (development)
         if: github.ref == 'refs/heads/development' && github.event_name == 'push'
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
         env:
           KUBECONFIG: ${{ env.KUBECONFIG_DEV }}
         run: |
@@ -51,13 +46,13 @@ jobs:
           kubectl config use-context ${{ env.CLUSTER_NAME }}
           kubectl set image deployment/my-app my-app=${{ env.IMAGE_REPO_NAME }}:${{ github.sha }} -n dev
           kubectl rollout status deployment/my-app -n dev
-      - name: Deploy to EKS (master)
-        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+      - name: Deploy to EKS (master)
+        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
         env:
           KUBECONFIG: ${{ env.KUBECONFIG_MASTER }}
         run: |
@@ -65,3 +60,8 @@ jobs:
           kubectl config use-context ${{ env.CLUSTER_NAME }}
           kubectl set image deployment/my-app my-app=${{ env.IMAGE_REPO_NAME }}:${{ github.sha }} -n prod
           kubectl rollout status deployment/my-app -n prod
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
