@@ -1,3 +1,3 @@
 <?php
-    echo "Hello, lirmgan!!";
+    echo "Hello, lir4gan!!";
 ?>
