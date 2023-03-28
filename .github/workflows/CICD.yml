@@ -22,24 +22,21 @@ env:
 jobs:
   build-and-deploy:
     runs-on: self-hosted
-    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          context: .
-          file: Dockerfile
-          tags: ${{ env.IMAGE_REPO_NAME }}:${{ github.sha }}
+      - name: Start Docker service
+        run: sudo service docker start
+      - name: Login to Docker Hub and push Docker image
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+          IMAGE_REPO_NAME: linnovate-task
+          IMAGE_TAG: latest
+        run: |
+          docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+          docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+          docker push $IMAGE_REPO_NAME:$IMAGE_TAG
           
       - name: Deploy to EKS (development)
         if: github.ref == 'refs/heads/development' && github.event_name == 'push'
