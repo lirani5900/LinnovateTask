@@ -35,8 +35,8 @@ jobs:
           IMAGE_TAG: latest
         run: |
           echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
-          docker push $IMAGE_REPO_NAME:$IMAGE_TAG
+          docker-compose build
+          docker-compose push
           
       - name: Deploy to EKS (development)
         if: github.ref == 'refs/heads/development' && github.event_name == 'push'
@@ -45,8 +45,7 @@ jobs:
         run: |
           aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG_DEV }}
           kubectl config use-context ${{ env.CLUSTER_NAME }}
-          kubectl set image deployment/my-app my-app=${{ env.IMAGE_REPO_NAME }}:${{ github.sha }} -n dev --context=arn:aws:eks:${{ env.AWS_REGION }}:${{ github.repository_owner }}:${{ env.CLUSTER_NAME }}/cluster/${{ env.CLUSTER_NAME }}
-          kubectl rollout status deployment/my-app -n dev --context=arn:aws:eks:${{ env.AWS_REGION }}:${{ github.repository_owner }}:${{ env.CLUSTER_NAME }}/cluster/${{ env.CLUSTER_NAME }}
+          kubectl apply -f k8s/dev/
           
       - name: Deploy to EKS (master)
         if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
@@ -55,5 +54,4 @@ jobs:
         run: |
           aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --kubeconfig ${{ env.KUBECONFIG_MASTER }}
           kubectl config use-context ${{ env.CLUSTER_NAME }}
-          kubectl set image deployment/my-app my-app=${{ env.IMAGE_REPO_NAME }}:${{ github.sha }} -n prod --context=arn:aws:eks:${{ env.AWS_REGION }}:${{ github.repository_owner }}:${{ env.CLUSTER_NAME }}/cluster/${{ env.CLUSTER_NAME }}
-          kubectl rollout status deployment/my-app -n prod --context=arn:aws:eks:${{ env.AWS_REGION }}:${{ github.repository_owner }}:${{ env.CLUSTER_NAME }}/cluster/${{ env.CLUSTER_NAME }}```
+          kubectl apply -f k8s/prod/
